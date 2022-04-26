@@ -93,6 +93,7 @@ contract Project {
 
     Request[] public requests;
     mapping(address => bool) public approvers;
+    mapping(address => uint) public contributions;
     uint public approversCount;
     address payable public creatorAccount;
     uint public amountGoal;
@@ -161,6 +162,7 @@ contract Project {
             approvers[msg.sender] = true;
             approversCount++;
         }
+        contributions[msg.sender] = contributions[msg.sender] + msg.value;
         currentBalance = currentBalance.add(msg.value);
         emit FundingReceived(msg.sender, msg.value, currentBalance);
         checkIfProjectFinanced();
@@ -249,19 +251,25 @@ contract Project {
         countOfApproves = approversCount;
     }
 
-//    function getRefund() public inState(State.Expired) returns (bool) {
-//            require(contributions[msg.sender] > 0);
-//
-//            uint amountToRefund = contributions[msg.sender];
-//            contributions[msg.sender] = 0;
-//
-//            if (!msg.sender.send(amountToRefund)) {
-//                contributions[msg.sender] = amountToRefund;
-//                return false;
-//            } else {
-//                currentBalance = currentBalance.sub(amountToRefund);
-//            }
-//
-//            return true;
-//    }
+    event RefundExecuted(uint amount);
+
+    function getRefund() external payable returns (bool) {
+        require(block.timestamp > raiseBy);
+        state = State.EXPIRED;
+        require(contributions[msg.sender] > 0);
+
+        uint amountToRefund = contributions[msg.sender];
+        contributions[msg.sender] = 0;
+
+        if (!payable(msg.sender).send(amountToRefund)) {
+            contributions[msg.sender] = amountToRefund;
+            return false;
+        } else {
+            currentBalance = currentBalance.sub(amountToRefund);
+        }
+
+        emit RefundExecuted(amountToRefund);
+
+        return true;
+   }
 }
