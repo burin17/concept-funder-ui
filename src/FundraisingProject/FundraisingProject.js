@@ -85,7 +85,19 @@ function FundraisingProject({fp, isModeration, isSelfProfile, isCurrentUser}) {
         web3.eth.getAccounts().then((accounts) => {
             setAccounts(accounts);
         });
-        setIsExpired(Date.parse(fp.duration) < Date.now() && fp.status == "IN_PROGRESS");
+        if (Date.parse(fp.duration) < Date.now() && fp.status == "IN_PROGRESS") {
+            fetch("http://localhost:18080/fundraising-projects/expired?fpId=" + fp.fundraisingProjectId, {
+                method: "POST",
+                headers: new Headers({
+                    "Authorization": sessionStorage.jwtToken
+                })
+            }).then(response => response.json())
+                .then(data => {
+                    setFp(data);
+                }).then(() => {
+                    setIsExpired(true);
+            });
+        }
     },[fp])
 
     return (
@@ -128,7 +140,7 @@ function FundraisingProject({fp, isModeration, isSelfProfile, isCurrentUser}) {
                 {isInApprovedState > 0 && isSelfProfile > 0 &&
                     <button id="startBtn" type="button" className="btn btn-primary btn-block m-2" onClick={() => startFp()}>Start company</button>
                 }
-                {isExpired &&
+                {isExpired && isSelfProfile &&
                     <button id="startBtn" type="button" className="btn btn-danger btn-block m-2">Refund</button>
                 }
             </div>

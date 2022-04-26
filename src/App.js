@@ -1,7 +1,7 @@
 import React from 'react'
 import Login from "./Login";
 import Register from "./Register";
-import StartFP from "./FundraisingProject/StartFP";
+import CreateFP from "./FundraisingProject/CreateFP";
 import SelfProfile from "./SelfProfile";
 import FundraisingProjects from "./FundraisingProject/FundraisingProjects";
 import './App.css';
@@ -105,7 +105,7 @@ function App() {
                     <Switch>
                         <Route path="/sign-in" component={Login} />
                         <Route path="/register" component={Register} />
-                        <Route path="/start-fundraising-project" component={StartFP} />
+                        <Route path="/start-fundraising-project" component={CreateFP} />
                         <Route path="/moderate-fundraising-project" component={Moderation} />
                         <Route path="/fundraising-projects" component={FundraisingProjects}></Route>
                         <Route path="/self-profile" component={SelfProfile} />

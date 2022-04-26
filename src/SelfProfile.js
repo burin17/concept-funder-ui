@@ -11,6 +11,7 @@ export default function SelfProfile() {
     const [mounted, setMounted] = useState(false);
     const [profile, setProfile] = useState([]);
     const [selfFps, setSelfFps] = useState([]);
+    const [investedFps, setInvestedFps] = useState([]);
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
@@ -36,6 +37,16 @@ export default function SelfProfile() {
             .then(data => {
                 console.log(data);
                 setSelfFps(data);
+            });
+        fetch(`http://localhost:18080/invested-fundraising-projects`, {
+            method: 'GET',
+            headers: new Headers({
+                "Authorization": sessionStorage.jwtToken
+            })
+        }).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                setInvestedFps(data);
             });
     }
 
@@ -81,11 +92,27 @@ export default function SelfProfile() {
                             </div>
                         </div>
                 </div>
-            <ul className="wrapperSelf">
+            {selfFps.length > 0 &&
+                <div style={{marginTop: "50px"}}>
+                    <h3 style={{marginLeft: 80, color: "#fff"}}>My fundraising projects:</h3>
+                    <ul className="wrapperSelf">
                 {selfFps.map(fp => {
                     return <FundraisingProject fp={fp} isModeration={false} isSelfProfile={true} isCurrentUser={true}/>
                 })}
-            </ul>
+                    </ul>
+                </div>
+            }
+            {investedFps.length > 0 &&
+                <div style={{marginTop: "50px"}}>
+                    <h3 style={{marginLeft: 80, color: "#fff"}}>Invested fundraising projects:</h3>
+                    <ul className="wrapperSelf">
+                        {investedFps.map(fp => {
+                            return <FundraisingProject fp={fp} isModeration={false} isSelfProfile={true}
+                                                       isCurrentUser={true}/>
+                        })}
+                    </ul>
+                </div>
+            }
         </div>
     );
 }
