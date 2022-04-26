@@ -1,0 +1,267 @@
+pragma solidity 0.8.7;
+
+library SafeMath {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a == 0) { return 0;}
+        uint256 c = a * b;
+        require(c / a == b);
+        return c;
+    }
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b > 0);
+        uint256 c = a / b;
+        return c;
+    }
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b <= a);
+        uint256 c = a - b;
+        return c;
+    }
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 c = a + b;
+        require(c >= a);
+        return c;
+    }
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+        require(b != 0);
+        return a % b;
+    }
+}
+
+contract Crowdfunding {
+    using SafeMath for uint256;
+
+    // all fundraising projects
+    Project[] private projects;
+
+    // event for startet project
+    event ProjectStarted(
+        address contractAddress,
+        address projectStarter,
+        string projectTitle,
+        string projectDesc,
+        uint256 deadline,
+        uint256 goalAmount
+    );
+
+    // start fundraising project
+    function startProject(
+        string calldata title,
+        string calldata description,
+        uint durationInDays,
+        uint amountToRaise
+    ) external {
+        Project newProject = new Project(payable(msg.sender), title, description, durationInDays, amountToRaise);
+        projects.push(newProject);
+        emit ProjectStarted(
+            address(newProject),
+            msg.sender,
+            title,
+            description,
+            durationInDays,
+            amountToRaise
+        );
+    }
+
+
+    function returnAllProjects() external view returns(Project[] memory){
+        return projects;
+    }
+}
+
+
+contract Project {
+    using SafeMath for uint256;
+
+    struct Request {
+        uint ethAmout;
+        string intention;
+        string reporting;
+        uint achiveBy;
+        uint countOfContributorsAtTheMoment;
+        uint countOfApproves;
+        bool complete;
+        mapping(address => bool) approvals;
+    }
+
+    // Data structures
+    enum State {
+        IN_PROGRESS,
+        EXPIRED,
+        FINANCED
+    }
+
+    Request[] public requests;
+    mapping(address => bool) public approvers;
+    uint public approversCount;
+    address payable public creatorAccount;
+    uint public amountGoal;
+    uint256 public currentBalance;
+    uint public raiseBy;
+    string public title;
+    string public description;
+    State public state;
+    event FundingReceived(address contributor, uint amount, uint currentTotal);
+    event PayoutRequestCreated(uint requestIdx, uint ethAmout, string intention, string reporting,
+                            uint achiveBy, uint requiredCountOfApproves);
+    event Approved(uint countOfApproves);
+    // Event that will be emitted whenever the project starter has received the funds
+    // event CreatorPaid(address recipient);
+
+    // Modifier to check current state
+    modifier inState(State _state) {
+        require(state == _state);
+        _;
+    }
+
+    // Modifier to check if the function caller is the project intermediateAccount
+    modifier isCreator() {
+        require(msg.sender == creatorAccount);
+        _;
+    }
+
+    modifier isPayOutRequestAvailable(uint ethAmout) {
+        require(state == State.FINANCED && currentBalance > ethAmout);
+        _;
+    }
+
+    modifier isContributionAllowed() {
+        require(state == State.FINANCED || state == State.IN_PROGRESS);
+        _;
+    }
+
+    constructor
+    (
+        address payable projectStarter,
+        string memory projectTitle,
+        string memory projectDesc,
+        uint daysToRaise,
+        uint goalAmount
+    ) public {
+        creatorAccount = projectStarter;
+        title = projectTitle;
+        description = projectDesc;
+        amountGoal = goalAmount;
+        raiseBy = block.timestamp.add(daysToRaise.mul(1 days));
+        currentBalance = 0;
+        approversCount = 0;
+        state = State.IN_PROGRESS;
+    }
+
+    /** @dev Function to fund a certain project.
+      */
+    function contribute() external isContributionAllowed payable {
+        if (block.timestamp > raiseBy) {
+            state = State.EXPIRED;
+        }
+        require(state != State.EXPIRED);
+        require(msg.sender != creatorAccount);
+        // set contributed eth amount for contributor
+        if (!approvers[msg.sender]) {
+            approvers[msg.sender] = true;
+            approversCount++;
+        }
+        currentBalance = currentBalance.add(msg.value);
+        emit FundingReceived(msg.sender, msg.value, currentBalance);
+        checkIfProjectFinanced();
+    }
+
+
+    function checkIfProjectFinanced() public {
+        if (currentBalance >= amountGoal) {
+            state = State.FINANCED;
+        }
+    }
+
+    function payOutRequst(
+        uint ethAmout,
+        string calldata intention,
+        string calldata reporting,
+        uint durationInDays
+    ) external isPayOutRequestAvailable(ethAmout) returns (bool) {
+        uint dueDate = block.timestamp.add(durationInDays.mul(1 days));
+        Request storage request = requests.push();
+        request.ethAmout = ethAmout;
+        request.intention = intention;
+        request.reporting = reporting;
+        request.achiveBy = dueDate;
+        request.countOfContributorsAtTheMoment = approversCount;
+        request.countOfApproves = 0;
+        request.complete = false;
+
+        uint requestIdx = requests.length - 1;
+
+        emit PayoutRequestCreated(requestIdx, ethAmout, intention, reporting, dueDate, approversCount);
+    }
+
+    function isContributor(address approver) public returns (bool) {
+        return approvers[approver];
+    }
+
+    function approveRequest(uint index) external {
+        Request storage request = requests[index];
+
+        require(approvers[msg.sender]);
+        require(!request.approvals[msg.sender]);
+
+        request.approvals[msg.sender] = true;
+        request.countOfApproves++;
+        if (request.countOfApproves > (request.countOfContributorsAtTheMoment / 2)) {
+            finalizeRequest(index);
+        }
+        emit Approved(request.countOfApproves);
+    }
+
+    function finalizeRequest(uint index) public {
+        Request storage request = requests[index];
+
+        require(!request.complete);
+
+        creatorAccount.transfer(request.ethAmout);
+
+        request.complete = true;
+
+        currentBalance = currentBalance - request.ethAmout;
+    }
+
+    function getCurrentBalance() external returns (uint) {
+        return currentBalance;
+    }
+
+    function getDetails() external returns
+    (
+        address payable projectStarter,
+        string memory projectTitle,
+        string memory projectDesc,
+        uint256 deadline,
+        State currentState,
+        uint256 currentAmount,
+        uint256 goalAmount,
+        uint countOfApproves
+    ) {
+        projectStarter = creatorAccount;
+        projectTitle = title;
+        projectDesc = description;
+        deadline = raiseBy;
+        currentState = state;
+        currentAmount = currentBalance;
+        goalAmount = amountGoal;
+        countOfApproves = approversCount;
+    }
+
+//    function getRefund() public inState(State.Expired) returns (bool) {
+//            require(contributions[msg.sender] > 0);
+//
+//            uint amountToRefund = contributions[msg.sender];
+//            contributions[msg.sender] = 0;
+//
+//            if (!msg.sender.send(amountToRefund)) {
+//                contributions[msg.sender] = amountToRefund;
+//                return false;
+//            } else {
+//                currentBalance = currentBalance.sub(amountToRefund);
+//            }
+//
+//            return true;
+//    }
+}

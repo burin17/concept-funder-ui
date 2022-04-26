@@ -1,79 +1,121 @@
-import React, { useEffect } from 'react'
-import TodoList from './Todo/TodoList'
-import Context from './context'
-import Loader from './Loader'
-import Modal from './Modal/Modal'
+import React from 'react'
+import Login from "./Login";
+import Register from "./Register";
+import StartFP from "./FundraisingProject/StartFP";
+import SelfProfile from "./SelfProfile";
+import FundraisingProjects from "./FundraisingProject/FundraisingProjects";
+import './App.css';
+import {BrowserRouter, Route, Switch, Link, useHistory, withRouter, Redirect} from "react-router-dom";
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import Moderation from "./Moderation";
+import FundraisingProjectDetails from "./FundraisingProject/FundraisingProjectDetails";
+import {useEffect, useState} from "react";
+import Context from "./context";
 
-const AddTodo = React.lazy(
-  () =>
-    new Promise(resolve => {
-      setTimeout(() => {
-        resolve(import('./Todo/AddTodo'))
-      }, 3000)
-    })
-)
 
 function App() {
-  const [todos, setTodos] = React.useState([])
-  const [loading, setLoading] = React.useState(true)
+    const [loaded, isLoaded] = useState(false);
+    const [currentUser, setCurrentUser] = useState();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/todos?_limit=5')
-      .then(response => response.json())
-      .then(todos => {
-        setTimeout(() => {
-          setTodos(todos)
-          setLoading(false)
-        }, 2000)
-      })
-  }, [])
+    function logOut() {
+        sessionStorage.removeItem("jwtToken")
+        setIsLoggedIn(false);
+    }
 
-  function toggleTodo(id) {
-    setTodos(
-      todos.map(todo => {
-        if (todo.id === id) {
-          todo.completed = !todo.completed
-        }
-        return todo
-      })
-    )
-  }
+    useEffect(() =>{
+        loadCurrentUser();
+    },[]);
 
-  function removeTodo(id) {
-    setTodos(todos.filter(todo => todo.id !== id))
-  }
+     function loadCurrentUser() {
+        fetch(`http://localhost:18080/user/selfProfile`,
+            {
+                method: 'GET',
+                headers: new Headers({
+                    "Authorization": sessionStorage.jwtToken
+                })
+            })
+            .then(response => {
+                if (response.status == "403") {
+                    setIsLoggedIn(false);
+                    return undefined;
+                } else {
+                    setIsLoggedIn(true);
+                    return response.json();
+                }
+            }).then(data => {
+                setCurrentUser(data);
+            }).then(data => {
+                isLoaded(true);
+            });
+    }
 
-  function addTodo(title) {
-    setTodos(
-      todos.concat([
-        {
-          title,
-          id: Date.now(),
-          completed: false
-        }
-      ])
-    )
-  }
+    if (loaded === false) {
+        return <div></div>
+    }
 
-  return (
-    <Context.Provider value={{ removeTodo }}>
-      <div className='wrapper'>
-        <h1>React tutorial</h1>
-        <Modal />
+    return (
+        <Context.Provider value={{loadCurrentUser}}>
+            <BrowserRouter>
+                <div className="App">
+                    <nav className="navbar navbar-expand-lg navbar-light fixed-top">
+                        <div className="container">
+                            <Link className="navbar-brand" to={"/sign-in"}>ConceptFunder</Link>
+                            <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
+                                <ul className="navbar-nav ml-auto">
+                                    <li className="nav-item">
+                                        <Link className="nav-link" to={"/fundraising-projects"}>Fundraising Projects</Link>
+                                    </li>
+                                    {isLoggedIn &&
+                                        <li className="nav-item">
+                                            <Link className="nav-link" to={"/start-fundraising-project"}>Start Fundraising Project</Link>
+                                        </li>
+                                    }
+                                    {isLoggedIn && currentUser.role === "ADMIN" &&
+                                        <li className="nav-item">
+                                            <Link className="nav-link"
+                                                  to={"/moderate-fundraising-project"}>Moderation</Link>
+                                        </li>
+                                    }
+                                    {isLoggedIn &&
+                                        <li className="nav-item">
+                                            <Link className="nav-link" to={"/self-profile"}>SelfProfile</Link>
+                                        </li>
+                                    }
+                                    {!isLoggedIn &&
+                                        <li className="nav-item">
+                                            <Link className="nav-link" to={"/sign-in"}>Login</Link>
+                                        </li>
+                                    }
+                                    {!isLoggedIn &&
+                                        <li className="nav-item">
+                                        <Link id="signIn" className="nav-link" to={"/register"}>Sign up</Link>
+                                        </li>
+                                    }
+                                    {isLoggedIn &&
+                                        <li className="nav-item">
+                                            <Link className="nav-link" onClick={() => logOut()}>Log out</Link>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
 
-        <React.Suspense fallback={<Loader />}>
-          <AddTodo onCreate={addTodo} />
-        </React.Suspense>
-
-        {loading && <Loader />}
-        {todos.length ? (
-          <TodoList todos={todos} onToggle={toggleTodo} />
-        ) : loading ? null : (
-          <p>No todos!</p>
-        )}
-      </div>
-    </Context.Provider>
-  )
+                    <Switch>
+                        <Route path="/sign-in" component={Login} />
+                        <Route path="/register" component={Register} />
+                        <Route path="/start-fundraising-project" component={StartFP} />
+                        <Route path="/moderate-fundraising-project" component={Moderation} />
+                        <Route path="/fundraising-projects" component={FundraisingProjects}></Route>
+                        <Route path="/self-profile" component={SelfProfile} />
+                        <Route path="/fundraising-project-details/:fpId" component={FundraisingProjectDetails}/>
+                    </Switch>
+                </div>
+            </BrowserRouter>
+        </Context.Provider>
+    );
 }
 
-export default App
+
+export default withRouter(App);
