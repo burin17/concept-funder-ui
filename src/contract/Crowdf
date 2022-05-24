@@ -39,7 +39,6 @@ contract Crowdfunding {
         address contractAddress,
         address projectStarter,
         string projectTitle,
-        string projectDesc,
         uint256 deadline,
         uint256 goalAmount
     );
@@ -47,17 +46,15 @@ contract Crowdfunding {
     // start fundraising project
     function startProject(
         string calldata title,
-        string calldata description,
         uint durationInDays,
         uint amountToRaise
     ) external {
-        Project newProject = new Project(payable(msg.sender), title, description, durationInDays, amountToRaise);
+        Project newProject = new Project(payable(msg.sender), title, durationInDays, amountToRaise);
         projects.push(newProject);
         emit ProjectStarted(
             address(newProject),
             msg.sender,
             title,
-            description,
             durationInDays,
             amountToRaise
         );
@@ -75,8 +72,6 @@ contract Project {
 
     struct Request {
         uint ethAmout;
-        string intention;
-        string reporting;
         uint achiveBy;
         uint countOfContributorsAtTheMoment;
         uint countOfApproves;
@@ -100,11 +95,10 @@ contract Project {
     uint256 public currentBalance;
     uint public raiseBy;
     string public title;
-    string public description;
     State public state;
     event FundingReceived(address contributor, uint amount, uint currentTotal);
-    event PayoutRequestCreated(uint requestIdx, uint ethAmout, string intention, string reporting,
-                            uint achiveBy, uint requiredCountOfApproves);
+    //requiredCountOfApproves - all contributors at the moment
+    event PayoutRequestCreated(uint requestIdx, uint ethAmout, uint achiveBy, uint requiredCountOfApproves);
     event Approved(uint countOfApproves);
     // Event that will be emitted whenever the project starter has received the funds
     // event CreatorPaid(address recipient);
@@ -122,7 +116,7 @@ contract Project {
     }
 
     modifier isPayOutRequestAvailable(uint ethAmout) {
-        require(state == State.FINANCED && currentBalance > ethAmout);
+        require(state == State.FINANCED && currentBalance >= ethAmout);
         _;
     }
 
@@ -135,13 +129,11 @@ contract Project {
     (
         address payable projectStarter,
         string memory projectTitle,
-        string memory projectDesc,
         uint daysToRaise,
         uint goalAmount
     ) public {
         creatorAccount = projectStarter;
         title = projectTitle;
-        description = projectDesc;
         amountGoal = goalAmount;
         raiseBy = block.timestamp.add(daysToRaise.mul(1 days));
         currentBalance = 0;
@@ -177,15 +169,11 @@ contract Project {
 
     function payOutRequst(
         uint ethAmout,
-        string calldata intention,
-        string calldata reporting,
         uint durationInDays
     ) external isPayOutRequestAvailable(ethAmout) returns (bool) {
         uint dueDate = block.timestamp.add(durationInDays.mul(1 days));
         Request storage request = requests.push();
         request.ethAmout = ethAmout;
-        request.intention = intention;
-        request.reporting = reporting;
         request.achiveBy = dueDate;
         request.countOfContributorsAtTheMoment = approversCount;
         request.countOfApproves = 0;
@@ -193,7 +181,7 @@ contract Project {
 
         uint requestIdx = requests.length - 1;
 
-        emit PayoutRequestCreated(requestIdx, ethAmout, intention, reporting, dueDate, approversCount);
+        emit PayoutRequestCreated(requestIdx, ethAmout, dueDate, approversCount);
     }
 
     function isContributor(address approver) public returns (bool) {
@@ -234,7 +222,6 @@ contract Project {
     (
         address payable projectStarter,
         string memory projectTitle,
-        string memory projectDesc,
         uint256 deadline,
         State currentState,
         uint256 currentAmount,
@@ -243,7 +230,6 @@ contract Project {
     ) {
         projectStarter = creatorAccount;
         projectTitle = title;
-        projectDesc = description;
         deadline = raiseBy;
         currentState = state;
         currentAmount = currentBalance;

@@ -1,6 +1,6 @@
 import web3 from './web3';
 
-const address = '0x66Ec588269476FD3c3bBC3DC2f6B577E08155739';
+const address = '0x41F6b948dDCc787F94761986aa041f1e6F5aD6A9';
 const abi = [
     {
         "anonymous": false,
@@ -21,12 +21,6 @@ const abi = [
                 "indexed": false,
                 "internalType": "string",
                 "name": "projectTitle",
-                "type": "string"
-            },
-            {
-                "indexed": false,
-                "internalType": "string",
-                "name": "projectDesc",
                 "type": "string"
             },
             {
@@ -63,11 +57,6 @@ const abi = [
             {
                 "internalType": "string",
                 "name": "title",
-                "type": "string"
-            },
-            {
-                "internalType": "string",
-                "name": "description",
                 "type": "string"
             },
             {

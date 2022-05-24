@@ -14,11 +14,6 @@ const abi = [
                 "type": "string"
             },
             {
-                "internalType": "string",
-                "name": "projectDesc",
-                "type": "string"
-            },
-            {
                 "internalType": "uint256",
                 "name": "daysToRaise",
                 "type": "uint256"
@@ -84,18 +79,6 @@ const abi = [
                 "internalType": "uint256",
                 "name": "ethAmout",
                 "type": "uint256"
-            },
-            {
-                "indexed": false,
-                "internalType": "string",
-                "name": "intention",
-                "type": "string"
-            },
-            {
-                "indexed": false,
-                "internalType": "string",
-                "name": "reporting",
-                "type": "string"
             },
             {
                 "indexed": false,
@@ -244,19 +227,6 @@ const abi = [
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "description",
-        "outputs": [
-            {
-                "internalType": "string",
-                "name": "",
-                "type": "string"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -294,11 +264,6 @@ const abi = [
             {
                 "internalType": "string",
                 "name": "projectTitle",
-                "type": "string"
-            },
-            {
-                "internalType": "string",
-                "name": "projectDesc",
                 "type": "string"
             },
             {
@@ -370,16 +335,6 @@ const abi = [
                 "type": "uint256"
             },
             {
-                "internalType": "string",
-                "name": "intention",
-                "type": "string"
-            },
-            {
-                "internalType": "string",
-                "name": "reporting",
-                "type": "string"
-            },
-            {
                 "internalType": "uint256",
                 "name": "durationInDays",
                 "type": "uint256"
@@ -423,16 +378,6 @@ const abi = [
                 "internalType": "uint256",
                 "name": "ethAmout",
                 "type": "uint256"
-            },
-            {
-                "internalType": "string",
-                "name": "intention",
-                "type": "string"
-            },
-            {
-                "internalType": "string",
-                "name": "reporting",
-                "type": "string"
             },
             {
                 "internalType": "uint256",

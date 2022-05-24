@@ -1,0 +1,46 @@
+.messengerUl {
+    list-style: none;
+    padding: 0
+}
+
+.messengerLiRight {
+    background: #1C8EF9;
+    color: #fff;
+    width: 30%;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 2px;
+    margin-top: 10px;
+    margin-left: 1170px;
+}
+
+.messengerLiLeft {
+    background: #1C8EF9;
+    color: #fff;
+    width: 30%;
+    margin-top: 10px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 10px;
+    margin-left: 5px;
+}
+
+.msgContentWrapper {
+    padding: 10px;
+}
+
+.techSupportText {
+    color: #fff;
+    text-align: center;
+    background: #167bff;
+    margin-top: -16px;
+    margin-bottom: 20px;
+    margin-left: -16px;
+    margin-right: -16px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    font-size: 20px;
+    padding: 3px;
+}

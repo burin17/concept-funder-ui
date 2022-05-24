@@ -2,7 +2,7 @@ import React from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import './selfProfile.css'
 import {useEffect, useState} from "react";
-import FundraisingProject from "./FundraisingProject/FundraisingProject";
+import FundraisingProject from "./FundraisingProject";
 import './fundraisingProjects.css';
 import {Link} from "react-router-dom";
 import {Button} from "react-bootstrap";
@@ -84,11 +84,10 @@ export default function SelfProfile() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-sm-5 m-4">
+                            <div className="col-sm-5" style={{position: "absolute", right: "80px", top: "107px"}}>
                                 <Link className="nav-link" to={"/start-fundraising-project"}>
-                                    <Button type="button" className="btn btn-primary btn-block">Start new fundraising company</Button>
+                                    <Button type="button" className="btn btn-primary btn-block" style={{width: "120%", height: "50px"}}>Start new fundraising company</Button>
                                 </Link>
-                                <button type="button" className="btn btn-primary btn-block m-3">Edit profile</button>
                             </div>
                         </div>
                 </div>

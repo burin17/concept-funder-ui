@@ -87,3 +87,16 @@ body, html, .App, #root, .auth-wrapper, .create-fp-wrapper {
 .wrapperSelf {
     list-style: none;
 }
+
+.navbar-nav > li{
+    padding-left:40px;
+}
+
+.navbar-nav {
+    position: absolute;
+    right: 260px;
+}
+
+.createFpForm > div {
+    margin-bottom: 10px;
+}

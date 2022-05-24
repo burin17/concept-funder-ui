@@ -1,31 +1,52 @@
 import React, { Component } from "react";
 
 export default class Register extends Component {
+
     async handleRegister(firstName, lastName, patronymic, email, username, password) {
-        fetch(`http://localhost:18080/register`, {
-            method: 'POST',
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            body: JSON.stringify(
-                {  "firstName": firstName,
+
+        if (firstName === '' || lastName === '' || email === '' || username === '' || password === '') {
+            document.getElementById("errorMessage").style.display = "block";
+            document.getElementById("errorMessage").innerText = "Please fill all mandatory fields";
+        } else {
+            fetch(`http://localhost:18080/register`, {
+                method: 'POST',
+                headers: new Headers({
+                    'Content-Type': 'application/json'
+                }),
+                body: JSON.stringify(
+                    {
+                        "firstName": firstName,
                         "lastName": lastName,
                         "patronymic": patronymic,
                         "email": email,
                         "username": username,
-                        "password": password}
-            )
-        }).then(response => response.json())
-            .then(json => {console.log(json)});
+                        "password": password
+                    }
+                )
+            }).then(response => {
+                if (response.status === 409) {
+                    document.getElementById("errorMessage").style.display = "block";
+                    response.json().then(json => {
+                        document.getElementById("errorMessage").innerText = json[Object.keys(json)[0]];
+                    })
+                } else {
+                    document.getElementById("errorMessage").style.display = "none";
+                    document.getElementById("errorMessage").innerText = "";
+                    this.props.history.push({
+                        pathname: `/sign-in`
+                    });
+                }
+            });
+        }
     }
 
     render() {
         return (
             <div className="auth-wrapper">
                 <div className="auth-inner">
+                    <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "5px"}}></div>
                     <form>
                         <h3>Sign Up</h3>
-
                         <div className="form-group">
                             <label>First name</label>
                             <input id="firstName" type="text" className="form-control" placeholder="First name" />
@@ -66,9 +87,6 @@ export default class Register extends Component {
                                     document.getElementById('username').value,
                                     document.getElementById('password').value
                                 )}>Sign Up</button>
-                        <p className="forgot-password text-right">
-                            Already registered <a href="#">sign in?</a>
-                        </p>
                     </form>
                 </div>
             </div>

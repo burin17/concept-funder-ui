@@ -2,8 +2,10 @@ import React, { Component } from "react";
 import "./Login.css";
 import 'bootstrap/dist/css/bootstrap.css';
 import Context from "./context";
+import { useHistory } from "react-router-dom";
 
 export default function Login() {
+    const history = useHistory();
     const {loadCurrentUser} = React.useContext(Context);
 
     async function handleLogin(username, password) {
@@ -13,16 +15,35 @@ export default function Login() {
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({"username": username, "password": password})
-        }).then(response => response.json())
-            .then(json => {
-                console.log(json["jwt"]);
-                sessionStorage.setItem("jwtToken", "Bearer_" + json["jwt"]);
-            }).then(() => loadCurrentUser());
+        }).then(response => {
+            if (response.status === 200) {
+                return response.json()
+            } else {
+
+                return undefined;
+            }
+        }).then(json => {
+                if (json !== undefined) {
+                    document.getElementById("errorMessage").style.display = "none";
+                    document.getElementById("errorMessage").innerText = "";
+                    sessionStorage.setItem("jwtToken", "Bearer_" + json["jwt"]);
+                    return "";
+                } else {
+                    document.getElementById("errorMessage").style.display = "block";
+                    document.getElementById("errorMessage").innerText = "Invalid username or password";
+                    return undefined;
+                }
+            }).then((res) => {
+                if (res !== undefined) {
+                    loadCurrentUser();
+                }
+            }).then(() => history.push('/fundraising-projects'));
     }
 
     return (
         <div className="auth-wrapper">
             <div className="auth-inner">
+                <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "10px"}}></div>
                 <form>
                     <h3>Sign In</h3>
 
@@ -35,20 +56,11 @@ export default function Login() {
                         <input id="password" type="password" className="form-control" placeholder="Enter password" />
                     </div>
 
-                    <div className="form-group">
-                        <div className="custom-control custom-checkbox">
-                            <input type="checkbox" className="custom-control-input" id="customCheck1" />
-                            <label className="custom-control-label" htmlFor="customCheck1">Remember me</label>
-                        </div>
-                    </div>
                     <br/>
                     <button type="button" className="btn btn-primary btn-block"
                             onClick={(event) =>
                                 handleLogin(document.getElementById('username').value,
                                     document.getElementById('password').value)}>Submit</button>
-                    <p className="forgot-password text-right">
-                        Forgot <a href="#">password?</a>
-                    </p>
                 </form>
             </div>
         </div>

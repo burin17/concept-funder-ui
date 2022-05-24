@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import FundraisingProject from "./FundraisingProject/FundraisingProject";
+import FundraisingProject from "./FundraisingProject";
 import './fundraisingProjects.css';
 
 export default function Moderation() {
@@ -7,7 +7,7 @@ export default function Moderation() {
     const [fps, setFps] = useState([]);
 
     if(!mounted) {
-        fetch(`http://localhost:18080/fundraising-projects/all`, {
+        fetch(`http://localhost:18080/moderation/fundraising-projects/status?status=NOT_CONSIDERED`, {
             method: 'GET',
             headers: new Headers({
                 "Authorization": sessionStorage.jwtToken
