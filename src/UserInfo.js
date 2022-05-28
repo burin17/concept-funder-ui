@@ -2,8 +2,11 @@ import React, {useState} from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import {useParams} from "react-router-dom";
 import {useEffect} from "react";
+import {useContext} from "react";
+import Context from "./context";
 
 export default function UserInfo(props) {
+    const {isEng} = useContext(Context);
     const user = props.location.state;
     const {userId} = useParams();
     const [investments, setInvestments] = useState([]);
@@ -31,12 +34,12 @@ export default function UserInfo(props) {
 
     return (
         <div style={{width: "80%", margin: "0 auto", marginTop: "130px", color: "#fff"}}>
-            <h2 style={{marginBottom: "20px"}}>{user.username} investments</h2>
+            <h2 style={{marginBottom: "20px"}}>{user.username}</h2>
             <table className="table" style={{color: "#fff", marginBottom: "40px"}}>
                 <thead>
                 <tr>
-                    <th scope="col">Crowdfunding Company</th>
-                    <th scope="col">Contributed Ethereum</th>
+                    <th scope="col">{isEng ? "Crowdfunding Company" : "Кампания"}</th>
+                    <th scope="col">ETH</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -49,7 +52,7 @@ export default function UserInfo(props) {
                 </tbody>
             </table>
             {total !== undefined &&
-                <h2>Totally contributed: {total.toString().substring(0, 7)}</h2>
+                <h2>{isEng ? "Totally contributed" : "Всего"}: {total.toString().substring(0, 7)}</h2>
             }
         </div>
     )

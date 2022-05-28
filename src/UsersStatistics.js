@@ -1,9 +1,12 @@
 import React, {useState} from "react";
 import Chat from "./Chat";
 import UserCard from "./UserCard";
+import {useContext} from "react";
+import Context from "./context";
 
 export default function UsersStatistics() {
     const [users, setUsers] = useState([]);
+    const {isEng} = useContext(Context);
 
     function searchUser() {
         let piece = document.getElementById('usernameInput').value;
@@ -23,7 +26,7 @@ export default function UsersStatistics() {
     return (
         <div>
             <div style={{position: "absolute", top: "80px", width: "93%", left: '80px'}}>
-                <input id="usernameInput" type="text" className="form-control" placeholder="Username" onChange={searchUser}/>
+                <input id="usernameInput" type="text" className="form-control" placeholder={isEng ? "Username" : "Логин"} onChange={searchUser}/>
             </div>
             <ul style={{listStyle: "none", marginTop: "180px"}}>
                 {users.map(user => {

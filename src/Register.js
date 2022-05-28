@@ -1,4 +1,6 @@
-import React, { Component } from "react";
+import React, {Component, useContext} from "react";
+
+import Context from "./context";
 
 export default class Register extends Component {
 
@@ -41,41 +43,42 @@ export default class Register extends Component {
     }
 
     render() {
+
         return (
             <div className="auth-wrapper">
                 <div className="auth-inner">
                     <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "5px"}}></div>
                     <form>
-                        <h3>Sign Up</h3>
+                        <h3>{this.context.isEng ? "Sign Up" : "Регистрация"}</h3>
                         <div className="form-group">
-                            <label>First name</label>
-                            <input id="firstName" type="text" className="form-control" placeholder="First name" />
+                            <label>{this.context.isEng ? "First name" : "Имя"}</label>
+                            <input id="firstName" type="text" className="form-control"/>
                         </div>
 
                         <div className="form-group">
-                            <label>Last name</label>
-                            <input id="lastName" type="text" className="form-control" placeholder="Last name" />
+                            <label>{this.context.isEng ? "Last name" : "Фамилия"}</label>
+                            <input id="lastName" type="text" className="form-control"/>
                         </div>
 
                         <div className="form-group">
-                            <label>Patronymic</label>
-                            <input id="patronymic" type="text" className="form-control" placeholder="Patronymic" />
+                            <label>{this.context.isEng ? "Patronymic" : "Отчество"}</label>
+                            <input id="patronymic" type="text" className="form-control"/>
                         </div>
 
                         <div className="form-group">
-                            <label>Email</label>
-                            <input id="email" type="email" className="form-control" placeholder="Email" />
+                            <label>{this.context.isEng ? "Email" : "Почта"}</label>
+                            <input id="email" type="email" className="form-control"/>
                         </div>
 
                         <div className="form-group">
-                            <label>Username</label>
-                            <input id="username" type="email" className="form-control" placeholder="Username" />
+                            <label>{this.context.isEng ? "Username" : "Логин"}</label>
+                            <input id="username" type="email" className="form-control"/>
                         </div>
 
 
                         <div className="form-group">
-                            <label>Password</label>
-                            <input id="password" type="password" className="form-control" placeholder="Enter password" />
+                            <label>{this.context.isEng ? "Password" : "Пароль"}</label>
+                            <input id="password" type="password" className="form-control"/>
                         </div>
                         <br/>
                         <button type="button" className="btn btn-primary btn-block"
@@ -86,7 +89,7 @@ export default class Register extends Component {
                                     document.getElementById('email').value,
                                     document.getElementById('username').value,
                                     document.getElementById('password').value
-                                )}>Sign Up</button>
+                                )}>{this.context.isEng ? "Sign Up" : "Зарегистрироваться"}</button>
                     </form>
                 </div>
             </div>

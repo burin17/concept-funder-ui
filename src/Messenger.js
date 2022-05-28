@@ -2,9 +2,12 @@ import React from "react";
 import "./messenger.css"
 import {useEffect} from "react";
 import SockJS from "sockjs-client";
+import {useContext} from "react";
+import Context from "./context";
 
 var stompClient = null;
 export default function Messenger() {
+    const {isEng} = useContext(Context);
     const [currentUser, setCurrentUser] = React.useState();
     const [currentChat, setCurrentChat] = React.useState();
     const [messages, setMessages] = React.useState([]);
@@ -226,9 +229,9 @@ export default function Messenger() {
             {console.log(currentChat)}
             <li style={{marginLeft: 35}}>
                 <div className="bg-light m-5 p-3 fpWrapper">
-                    <div className="techSupportText">Tech support dialog</div>
+                    <div className="techSupportText">{isEng ? "Tech support dialog" : "Техподдержка"}</div>
                     {messages.length === 0 &&
-                        <div id="noMessagesText" style={{textAlign: "center", padding: "60px"}}>Ask your question here..</div>
+                        <div id="noMessagesText" style={{textAlign: "center", padding: "60px"}}>{isEng ? "Ask your question here.." : "Задайте вопрос ..."}</div>
                     }
                     <ul id="messengerUl" className="messengerUl">
                         {messages.map(msg => {
@@ -247,12 +250,12 @@ export default function Messenger() {
 
                     <div className="input-group">
                         <input id="messageContent" type="text" className="form-control" aria-describedby="basic-addon2"/>
-                        <button id="startBtn" type="button" className="btn btn-primary" onClick={() => sendMessage()}>Send</button>
+                        <button id="startBtn" type="button" className="btn btn-primary" onClick={() => sendMessage()}>{isEng ? "Send" : "Отправить"}</button>
                     </div>
                     <button id="closeBtn" type="button" className="btn btn-primary"
                             style={{marginTop: "10px", marginLeft: '790px'}}
                             onClick={() => markAsClosed()}>
-                        Close chat
+                        {isEng ? "Close chat" : "Закрыть чат"}
                     </button>
                 </div>
             </li>

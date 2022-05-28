@@ -3,8 +3,10 @@ import "./Login.css";
 import 'bootstrap/dist/css/bootstrap.css';
 import Context from "./context";
 import { useHistory } from "react-router-dom";
+import {useContext} from "react";
 
 export default function Login() {
+    const {isEng} = useContext(Context);
     const history = useHistory();
     const {loadCurrentUser} = React.useContext(Context);
 
@@ -37,7 +39,12 @@ export default function Login() {
                 if (res !== undefined) {
                     loadCurrentUser();
                 }
-            }).then(() => history.push('/fundraising-projects'));
+                return res;
+            }).then(res => {
+                if (res !== undefined) {
+                    history.push('/fundraising-projects')
+                }
+        });
     }
 
     return (
@@ -45,22 +52,22 @@ export default function Login() {
             <div className="auth-inner">
                 <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "10px"}}></div>
                 <form>
-                    <h3>Sign In</h3>
+                    <h3>{isEng ? "Sign In" : "Войти"}</h3>
 
                     <div className="form-group">
-                        <label>Username</label>
-                        <input id="username" className="form-control" placeholder="Enter username" />
+                        <label>{isEng ? "Username" : "Логин"}</label>
+                        <input id="username" className="form-control"/>
                     </div>
                     <div className="form-group">
-                        <label>Password</label>
-                        <input id="password" type="password" className="form-control" placeholder="Enter password" />
+                        <label>{isEng ? "Password" : "Пароль"}</label>
+                        <input id="password" type="password" className="form-control"/>
                     </div>
 
                     <br/>
                     <button type="button" className="btn btn-primary btn-block"
                             onClick={(event) =>
                                 handleLogin(document.getElementById('username').value,
-                                    document.getElementById('password').value)}>Submit</button>
+                                    document.getElementById('password').value)}>{isEng ? "Submit" : "Войти"}</button>
                 </form>
             </div>
         </div>

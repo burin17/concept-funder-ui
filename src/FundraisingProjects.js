@@ -1,9 +1,12 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useContext} from "react";
 import FundraisingProject from "./FundraisingProject";
 import './fundraisingProjects.css';
 import {add} from "react-modal/lib/helpers/classList";
+import Context from "./context";
 
 export default function FundraisingProjects() {
+    const {isEng} = useContext(Context);
+
     const [mounted, setMounted] = useState(false)
     const [fps, setFps] = useState([]);
     const [currentUser, setCurrentUser] = useState();
@@ -98,10 +101,11 @@ export default function FundraisingProjects() {
 
     return (
         <div>
+            {console.log(isEng)}
             <div style={{position: "absolute", top: "80px", width: "93%", left: '80px'}}>
-                <input id="titleInput" type="text" className="form-control" placeholder="Title" onChange={() => search(tags)}/>
-                <input id="tagInput" type="text" className="form-control" placeholder="Tags" style={{marginTop: "5px"}} onKeyDown={addTag}/>
-                <button type="button" className="btn btn-light btn-block" style={{marginTop: "5px", marginLeft: "1640px"}} onClick={() => clear()}>Clear</button>
+                <input id="titleInput" type="text" className="form-control" placeholder={isEng ? "Title" : "Название кампании"} onChange={() => search(tags)}/>
+                <input id="tagInput" type="text" className="form-control" placeholder={isEng ? "Tags" : "Метки"} style={{marginTop: "5px"}} onKeyDown={addTag}/>
+                <button type="button" className="btn btn-light btn-block" style={{marginTop: "5px", marginLeft: "1632px"}} onClick={() => clear()}>{isEng ? "Clear" : "Сброс"}</button>
             </div>
             <div id="selectedTags" style={{display: 'flex', position: "absolute", top: "170px", left: '90px'}}>
                 {tags.map(tag => "#" + tag + " ")}

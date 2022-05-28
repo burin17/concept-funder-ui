@@ -2,15 +2,19 @@ import React, {useLayoutEffect, useState} from "react";
 import 'bootstrap/dist/css/bootstrap.css';
 import {useEffect} from "react";
 import web3 from './contract/web3';
-import {useHistory, useParams} from "react-router-dom";
+import {Link, useHistory, useParams} from "react-router-dom";
 import PayoutRequest from "./PayoutRequest"
 import './fundraisingProjects.css';
 import crowdfundProject from './contract/crowdfundProjectInstance';
 import {useLocation} from "react-router-dom";
 import {node} from "prop-types";
 import './loading.css';
+import {useContext} from "react";
+import Context from "./context";
 
 export default function FundraisingProjectDetails() {
+    const {isEng} = useContext(Context);
+
     const history = useHistory();
     const locationData = useLocation();
     const {fpId} = useParams();
@@ -26,6 +30,7 @@ export default function FundraisingProjectDetails() {
     const [activeTab, setActiveTab] = React.useState('RFPO');
     const [loading, setLoading] = React.useState(false);
     const [rfpoLoading, setRfpoLoading] = React.useState(false);
+    const [investments, setInvestments] = React.useState([]);
 
     useEffect(() =>{
         loadData();
@@ -123,6 +128,16 @@ export default function FundraisingProjectDetails() {
             setAccounts(accounts);
             loaded(true);
         });
+
+        await fetch(`http://localhost:18080/fundraising-projects/investments/` + fpId,
+            {
+                method: 'GET',
+                headers: new Headers({
+                    "Authorization": sessionStorage.jwtToken
+                })
+            })
+            .then(response => response.json())
+            .then(data => setInvestments(data));
     }
 
     if (isLoaded === false) {
@@ -130,6 +145,12 @@ export default function FundraisingProjectDetails() {
     }
 
     async function invest() {
+        let currentlyPaidOut = 0;
+        payoutRequests.forEach(payoutRequest => {
+            if (payoutRequest.countOfApproves >= payoutRequest.requiredAmountOfApproves) {
+                currentlyPaidOut += payoutRequest.ethAmount;
+            }
+        })
         const ethAmount = document.getElementById("ethAmount").value;
         if (!/^[\d.]+$/.test(ethAmount)) {
             document.getElementById("ethAmount").value = "";
@@ -143,10 +164,10 @@ export default function FundraisingProjectDetails() {
                 value: web3.utils.toWei(String(ethAmount), 'ether'),
             }).then((res) => {
                 setLoading(false);
-                const currentAmount = (parseInt(res.events.FundingReceived.returnValues.currentTotal, 10) / 1000000000000000000);
+                const currentAmount = (parseInt(res.events.FundingReceived.returnValues.currentTotal, 10) / 1000000000000000000) + currentlyPaidOut;
                 fProj.currentAmount = currentAmount;
                 return fetch(`http://localhost:18080/fundraising-projects/invest?id=` + fProj.fundraisingProjectId
-                    + "&currentAmount=" + currentAmount + "&investor=" + currentUser.id + "&ethAmount=" + ethAmount, {
+                    + "&currentAmount=" + currentAmount + "&investor=" + currentUser.id + "&ethAmount=" + ethAmount + "&from=" + accounts[0], {
                     method: 'POST',
                     headers: new Headers({
                         "Authorization": sessionStorage.jwtToken
@@ -282,35 +303,36 @@ export default function FundraisingProjectDetails() {
                     <div className="auth-inner">
                         <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "5px"}}></div>
                         <form>
-                            <h3>Request for payout</h3>
+                            <h3>{isEng ? "Request for payout" : "Запрос на выплату"}</h3>
 
                             <div className="form-group">
-                                <label>Ether amount</label>
-                                <input id="etherAmount" type="text" className="form-control" placeholder="Ether amount" />
+                                <br/>
+                                <input id="etherAmount" type="text" className="form-control" placeholder={isEng ? "Ether amount" : "Кол-во средств"} />
                             </div>
 
                             <div className="form-group">
-                                <label>Intention</label>
-                                <textarea id="intention" className="form-control" placeholder="Intention" style={{height: "150px"}}/>
+                                <br/>
+                                <textarea id="intention" className="form-control" placeholder={isEng ? "Intention" : "Цель запроса"} style={{height: "150px"}}/>
                             </div>
 
                             <div className="form-group">
-                                <label>Reporting</label>
-                                <textarea id="reporting" className="form-control" placeholder="Reporting" style={{height: "150px"}}/>
+                                <br/>
+                                <textarea id="reporting" className="form-control" placeholder={isEng ? "Reporting" : "Отчетность"} style={{height: "150px"}}/>
                             </div>
 
                             <div className="form-group">
-                                <label>Days</label>
-                                <input id="days" type="text" className="form-control" placeholder="Days" />
+                                <br/>
+                                <input id="days" type="text" className="form-control" placeholder={isEng ? "Days" : "Дней потребуется"} />
                             </div>
 
                             <br/>
-                            <button type="button" className="btn btn-primary btn-block" onClick={() => requestPayout()}>Request</button>
+
+                            <button type="button" className="btn btn-primary btn-block" onClick={() => requestPayout()}>{isEng ? "Request" : "Запросить"}</button>
                             {rfpoLoading &&
-                                <div className="loader" style={{position: "absolute", left: "836px", bottom: "198px"}}></div>
+                                <div className="loader" style={{position: "absolute", left: "850px", bottom: "198px"}}></div>
                             }
-                            <button type="button" className="btn btn-secondary btn-block" style={{marginLeft: "175px"}}
-                                    onClick={() => setRPFormVisibility(false)}>Cancel</button>
+                            <button type="button" className="btn btn-secondary btn-block" style={{position: "absolute", right: "746px"}}
+                                    onClick={() => setRPFormVisibility(false)}>{isEng ? "Cancel" : "Закрыть"}</button>
                         </form>
                     </div>
                 </div>
@@ -318,14 +340,13 @@ export default function FundraisingProjectDetails() {
                     <h2 className="p-3">{fProj.title}</h2>
                     <div className="p-3">{fProj.description}</div>
                     <div className="row p-3">
-                        <div className="col-sm">User: {fProj.founder.username}</div>
-                        <div className="col-sm">Goal: {fProj.amountGoal} ETH</div>
+                        <div className="col-sm">{isEng ? "User" : "Пользователь"}: {fProj.founder.username}</div>
+                        <div className="col-sm">{isEng ? "Goal" : "Цель"}: {fProj.amountGoal} ETH</div>
                         {isDurationAvailable > 0 &&
-                            <div className="col-sm">Due
-                                date: {fProj.duration.substring(0, fProj.duration.indexOf('T'))}</div>
+                            <div className="col-sm">{isEng ? "Due date" : "Сборы до"}: {fProj.duration.substring(0, fProj.duration.indexOf('T'))}</div>
                         }
-                        <div className="col-sm">Days: {fProj.days}</div>
-                        <div className="col-sm">Raised: {fProj.currentAmount} ETH</div>
+                        <div className="col-sm">{isEng ? "Days" : "Дней"}: {fProj.days}</div>
+                        <div className="col-sm">{isEng ? "Raised" : "Собрано"}: {fProj.currentAmount} ETH</div>
                     </div>
                     <div style={{display: "flex", justifyContent: "space-between", width: "96%"}}>
                         <div className="p-3">{fProj.tags.map(tag => "#" + tag + " ")}</div>
@@ -338,13 +359,16 @@ export default function FundraisingProjectDetails() {
                             </div>
                         </div>
                     </div>
+                    {fProj.founder.id === currentUser.id && fProj.contractAddress !== null &&
+                        <div className="p-3">{isEng ? "Contract address" : "Адрес контракта"}: {fProj.contractAddress}</div>
+                    }
                     {fProj.founder.id != currentUser.id && currentUser.id !== undefined && currentUser.role === "USER" &&
                         <div style={{display: "flex"}}>
                             <div className="input-group m-2 w-25">
-                                <input id="ethAmount" type="text" className="form-control" placeholder="ETH amount"
+                                <input id="ethAmount" type="text" className="form-control" placeholder="ETH"
                                        aria-label="ETH amount" aria-describedby="basic-addon2"/>
                                 <button id="startBtn" type="button" className="btn btn-primary"
-                                        onClick={() => invest()}>Contribute
+                                        onClick={() => invest()}>{isEng ? "Contribute" : "Финансировать"}
                                 </button>
                             </div>
                             {loading &&
@@ -354,11 +378,16 @@ export default function FundraisingProjectDetails() {
                     }
                     {currentUser.id !== undefined && currentUser.role === "ADMIN" &&
                         <button id="startBtn" type="button" className="m-2 btn btn-danger"
-                                onClick={block}>Block</button>
+                                onClick={block}>{isEng ? "Block" : "Заблокировать"}</button>
                     }
                     {fProj.founder.id == currentUser.id && fProj.status == "FINANCED" &&
                         <button id="startBtn" type="button" className="m-2 btn btn-primary"
-                                onClick={() => setRPFormVisibility(true)}>Request payout</button>
+                                onClick={() => setRPFormVisibility(true)}>{isEng ? "Request payout" : "Запросить выплату"}</button>
+                    }
+                    {fProj.founder.id === currentUser.id &&
+                        <Link to={{pathname:`/investments/${fpId}`, state: {"investments": investments, "fp": fProj}}}>
+                            <button style={{marginLeft: "10px"}} className="btn btn-primary">{isEng ? "Check participants" : "Участники финансирования"}</button>
+                        </Link>
                     }
                 </div>
             </li>
@@ -370,7 +399,7 @@ export default function FundraisingProjectDetails() {
                     }
                     document.getElementById("storyTab").style.color = '#000';
                 }}>
-                    Story
+                    {isEng ? "Story" : "Описание"}
                 </div>
                 <div id="rfpoTab" onClick={() => {
                     setActiveTab("RFPO");
@@ -379,7 +408,7 @@ export default function FundraisingProjectDetails() {
                     }
                     document.getElementById("rfpoTab").style.color = '#000';
                 }}>
-                    Requests for payout
+                    {isEng ? "Requests for payout" : "Запросы на выплату"}
                 </div>
                 <div id="imagesTab" onClick={() => {
                     setActiveTab("Images");
@@ -387,21 +416,21 @@ export default function FundraisingProjectDetails() {
                         document.getElementById("tabsWrapper").children[i].style.color = '#fff';
                     }
                     document.getElementById("imagesTab").style.color = '#000';
-                }}>Images</div>
+                }}>{isEng ? "Images" : "Картинки"}</div>
                 <div id="videosTab" onClick={() => {
                     setActiveTab("Videos");
                     for (let i = 0; i < document.getElementById("tabsWrapper").children.length; i++) {
                         document.getElementById("tabsWrapper").children[i].style.color = '#fff';
                     }
                     document.getElementById("videosTab").style.color = '#000';
-                }}>Videos</div>
+                }}>{isEng ? "Videos" : "Видео"}</div>
                 <div id="otherFilesTab" onClick={() => {
                     setActiveTab("Other");
                     for (let i = 0; i < document.getElementById("tabsWrapper").children.length; i++) {
                         document.getElementById("tabsWrapper").children[i].style.color = '#fff';
                     }
                     document.getElementById("otherFilesTab").style.color = '#000';
-                }}>Other files</div>
+                }}>{isEng ? "Other files" : "Другие файлы"}</div>
                 {locationData.state.isModeration &&
                     <div id="moderationFilesTab" onClick={() => {
                         setActiveTab("Moderation");
@@ -409,7 +438,7 @@ export default function FundraisingProjectDetails() {
                             document.getElementById("tabsWrapper").children[i].style.color = '#fff';
                         }
                         document.getElementById("moderationFilesTab").style.color = '#000';
-                    }}>Moderation</div>
+                    }}>{isEng ? "Moderation" : "Модерация"}</div>
                 }
             </div>
             {activeTab === 'Story' &&
@@ -435,7 +464,7 @@ export default function FundraisingProjectDetails() {
                                     <span style={{color: "#000", textDecoration: "none"}}>
                                         {file.name}
                                     </span>
-                                    <button id="startBtn" type="button" className="m-2 btn btn-light" onClick={() => downloadFile(file)}>Download</button>
+                                    <button id="startBtn" type="button" className="m-2 btn btn-light" onClick={() => downloadFile(file)}>{isEng ? "Download" : "Загрузить"}</button>
                                 </li>
                             })
                         }
@@ -466,7 +495,7 @@ export default function FundraisingProjectDetails() {
                                     <span style={{color: "#000", textDecoration: "none"}}>
                                         {file.name}
                                     </span>
-                                    <button id="startBtn" type="button" className="m-2 btn btn-light" onClick={() => downloadFile(file)}>Download</button>
+                                    <button id="startBtn" type="button" className="m-2 btn btn-light" onClick={() => downloadFile(file)}>{isEng ? "Download" : "Загрузить"}</button>
                                 </li>
                                 })
                             }

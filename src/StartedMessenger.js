@@ -3,9 +3,12 @@ import "./messenger.css"
 import {useEffect} from "react";
 import {useParams} from "react-router-dom";
 import SockJS from "sockjs-client";
+import {useContext} from "react";
+import Context from "./context";
 
 var stompClient = null;
 export default function StartedMessenger({chat}) {
+    const {isEng} = useContext(Context);
     const {chatId} = useParams()
     const [currentUser, setCurrentUser] = React.useState();
     const [currentChat, setCurrentChat] = React.useState();
@@ -178,10 +181,8 @@ export default function StartedMessenger({chat}) {
         <div>
             <li style={{marginLeft: 35}}>
                 <div className="bg-light m-5 p-3 fpWrapper">
-                    <div className="techSupportText">Tech support dialog</div>
-                    {messages.length === 0 &&
-                        <div id="noMessagesText" style={{textAlign: "center", padding: "60px"}}>Ask your question here..</div>
-                    }
+                    <div className="techSupportText">{isEng ? "Tech support dialog" : "Техподдержка"}</div>
+
                     <ul id="messengerUl" className="messengerUl">
                         {messages.map(msg => {
                             if (currentUser.username === msg.author.username) {
@@ -199,7 +200,7 @@ export default function StartedMessenger({chat}) {
 
                     <div className="input-group">
                         <input id="messageContent" type="text" className="form-control" aria-describedby="basic-addon2"/>
-                        <button id="startBtn" type="button" className="btn btn-primary" onClick={() => sendMessage()}>Send</button>
+                        <button id="startBtn" type="button" className="btn btn-primary" onClick={() => sendMessage()}>{isEng ? "Send" : "Отправить"}</button>
                     </div>
                 </div>
             </li>

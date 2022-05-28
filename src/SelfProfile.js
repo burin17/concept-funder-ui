@@ -6,8 +6,12 @@ import FundraisingProject from "./FundraisingProject";
 import './fundraisingProjects.css';
 import {Link} from "react-router-dom";
 import {Button} from "react-bootstrap";
+import {useContext} from "react";
+import Context from "./context";
 
 export default function SelfProfile() {
+    const {isEng} = useContext(Context);
+
     const [mounted, setMounted] = useState(false);
     const [profile, setProfile] = useState([]);
     const [selfFps, setSelfFps] = useState([]);
@@ -61,39 +65,37 @@ export default function SelfProfile() {
                             <div className="d-flex col-sm">
                                 <div className="col-xxl-9">
                                     <div className="d-flex flex-row gap-2">
-                                        Username: {profile.username}
+                                        {isEng ? "Username" : "Логин"}: {profile.username}
                                     </div>
                                     <div className="d-flex flex-row gap-2">
-                                        Email: {profile.email}
+                                        {isEng ? "Email" : "Почта"}: {profile.email}
                                     </div>
                                     <div className="d-flex flex-row gap-2">
-                                        First name: {profile.firstName}
+                                        {isEng ? "First name" : "Имя"}: {profile.firstName}
                                     </div>
                                     <div className="d-flex flex-row gap-2">
-                                        Last name: {profile.lastName}
+                                        {isEng ? "Last name" : "Фамилия"}: {profile.lastName}
                                     </div>
                                     <div className="d-flex flex-row gap-2">
-                                        Patronymic: {profile.patronymic}
-                                    </div>
-                                    <div className="d-flex flex-row gap-2">
-                                        Role: {profile.role}
-                                    </div>
-
-                                    <div className="d-flex flex-row gap-2">
-                                        Ethereum address: {profile.username}
+                                        {isEng ? "Patronymic" : "Отчество"}: {profile.patronymic}
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-sm-5" style={{position: "absolute", right: "80px", top: "107px"}}>
-                                <Link className="nav-link" to={"/start-fundraising-project"}>
-                                    <Button type="button" className="btn btn-primary btn-block" style={{width: "120%", height: "50px"}}>Start new fundraising company</Button>
-                                </Link>
-                            </div>
+                            {profile.role !== "ADMIN" &&
+                                <div className="col-sm-5" style={{position: "absolute", right: "80px", top: "87px"}}>
+                                    <Link className="nav-link" to={"/start-fundraising-project"}>
+                                        <Button type="button" className="btn btn-primary btn-block" style={{
+                                            width: "120%",
+                                            height: "50px"
+                                        }}>{isEng ? "Start new fundraising company" : "Создать кампанию"}</Button>
+                                    </Link>
+                                </div>
+                            }
                         </div>
                 </div>
             {selfFps.length > 0 &&
                 <div style={{marginTop: "50px"}}>
-                    <h3 style={{marginLeft: 80, color: "#fff"}}>My fundraising projects:</h3>
+                    <h3 style={{marginLeft: 80, color: "#fff"}}>{isEng ? "My fundraising projects": "Мои краудфандинговые кампании"}:</h3>
                     <ul className="wrapperSelf">
                 {selfFps.map(fp => {
                     return <FundraisingProject fp={fp} isModeration={false} isSelfProfile={true} isCurrentUser={true}/>
@@ -103,7 +105,7 @@ export default function SelfProfile() {
             }
             {investedFps.length > 0 &&
                 <div style={{marginTop: "50px"}}>
-                    <h3 style={{marginLeft: 80, color: "#fff"}}>Invested fundraising projects:</h3>
+                    <h3 style={{marginLeft: 80, color: "#fff"}}>{isEng ? "Invested fundraising projects" : "Профинансированные краудфандинговые кампании"}:</h3>
                     <ul className="wrapperSelf">
                         {investedFps.map(fp => {
                             return <FundraisingProject fp={fp} isModeration={false} isSelfProfile={true}

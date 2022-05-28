@@ -1,8 +1,12 @@
 import React, {Component, useState} from "react";
 import {add} from "react-modal/lib/helpers/classList";
 import { useHistory } from "react-router-dom";
+import {useContext} from "react";
+import Context from "./context";
 
 export default function CreateFP() {
+    const {isEng} = useContext(Context);
+
     const history = useHistory();
     const [images, setImages] = useState([]);
     const [moderationFiles, setModerationFiles] = useState([]);
@@ -162,82 +166,82 @@ export default function CreateFP() {
             <div className="create-fp-inner" style={{width: "800px"}}>
                 <div id="errorMessage" style={{display: "none", color:"red", textAlign: "center", marginBottom: "10px"}}></div>
                 <form className="createFpForm" style={{position: "relative"}}>
-                    <h3>Request Fundraising Company</h3>
+                    <h3>{isEng ? "Request Fundraising Company" : "Создать краудфандинговую кампанию"}</h3>
 
                     <div className="form-group">
-                        <label>Title</label>
-                        <input id="title" type="text" className="form-control" placeholder="Title" />
+                        <label>{isEng ? "Title" : "Название"}</label>
+                        <input id="title" type="text" className="form-control"/>
                     </div>
 
                     <div className="form-group">
-                        <label>Brief description</label>
+                        <label>{isEng ? "Brief description" : "Краткое описание"}</label>
                         <textarea id="description" className="form-control" style={{height: "120px"}}/>
                     </div>
 
                     <div className="form-group">
-                        <label>Goal</label>
-                        <input id="amountGoal" type="text" className="form-control" placeholder="Goal" />
+                        <label>{isEng ? "Goal" : "Цель"}</label>
+                        <input id="amountGoal" type="text" className="form-control"/>
                     </div>
 
                     <div className="form-group">
-                        <label>Days</label>
-                        <input id="days" type="text" className="form-control" placeholder="Days" />
+                        <label>{isEng ? "Days" : "Кол-во дней"}</label>
+                        <input id="days" type="text" className="form-control"/>
                     </div>
 
                     <div className="form-group">
-                        <label>Tell advanced story of fundraising company</label>
+                        <label>{isEng ? "Tell advanced story of fundraising company" : "Описание финансируемого проекта"}</label>
                         <textarea id="story" className="form-control" style={{height: "380px"}}/>
                     </div>
 
                     <div className="input-group">
-                        <input id="tag" type="text" className="form-control" placeholder="Tags" onKeyDown={addTag}/>
+                        <input id="tag" type="text" className="form-control" placeholder={isEng ? "Tags" : "Метки"} onKeyDown={addTag}/>
                     </div>
 
                     <div id="selectedTags" style={{display: 'none'}}>
-                        <label>Tags: </label>
+                        <label>{isEng ? "Tags" : "Метки"}: </label>
                     </div>
 
                     <div className="input-group">
-                        <input id="youtubeLink" type="text" className="form-control" placeholder="YouTube video" />
-                        <button type="button" className="btn btn-primary btn-block" onClick={() => addYoutube()}>Add</button>
+                        <input id="youtubeLink" type="text" className="form-control" placeholder={isEng ? "YouTube video" : "YouTube видео"} />
+                        <button type="button" className="btn btn-primary btn-block" onClick={() => addYoutube()}>{isEng ? "Add" : "Добавить"}</button>
                     </div>
 
                     <div id="selectedYoutube" style={{display: 'none'}}>
-                        <label>Selected YouTube videos:</label>
+                        <label>{isEng ? "Selected YouTube videos" : "YouTube видео"}:</label>
                     </div>
 
 
 
                     <div id="imagesFilesWrapper" className="form-group">
-                        <label>Images for fundraising company</label><br/>
+                        <label>{isEng ? "Images for fundraising company" : "Изображения для крауд-кампании"}</label><br/>
                         <input type="file" onChange={addImage}/>
                     </div>
 
                     <div id="otherFilesWrapper" className="form-group">
-                        <label>Other files which will be available for viewing</label><br/>
+                        <label>{isEng ? "Other files which will be available for viewing" : "Файлы, доступные для просмотра"}</label><br/>
                         <input type="file" onChange={addOtherFile}/>
                     </div>
 
                     <div id="selectedImagesWrapper" style={{display: 'none'}}>
-                        <label>Selected images for fundraising company:</label>
+                        <label>{isEng ? "Selected images for fundraising company" : "Выбранные изображения"}:</label>
                     </div>
 
                     <div id="selectedOtherFilesWrapper" style={{display: 'none'}}>
-                        <label>Other files:</label>
+                        <label>{isEng ? "Other files" : "Выбранные файлы"}:</label>
                     </div>
 
                     <div className="form-group">
-                        <label>Moderation notes</label>
+                        <label>{isEng ? "Moderation notes" : "Комментарии для модерации"}</label>
                         <textarea id="moderationNotes" className="form-control" style={{height: "120px"}}/>
                     </div>
 
                     <div id="moderationFilesWrapper" className="form-group">
-                        <label>Files that help with moderation</label><br/>
+                        <label>{isEng ? "Files that help with moderation" : "Файлы для модерации"}</label><br/>
                         <input type="file" onChange={addModerationFile}/>
                     </div>
 
                     <div id="selectedModerationFilesWrapper" style={{display: 'none'}}>
-                        <label>Selected files for moderation:</label>
+                        <label>{isEng ? "Selected files for moderation" : "Выбранные файлы для модерации"}:</label>
                     </div>
 
                     <br/>
@@ -249,7 +253,7 @@ export default function CreateFP() {
                                 document.getElementById('days').value,
                                 document.getElementById('story').value,
                                 document.getElementById('moderationNotes').value,
-                            )}>Create Fundraising Project</button>
+                            )}>{isEng ? "Create" : "Создать"}</button>
                 </form>
             </div>
         </div>
